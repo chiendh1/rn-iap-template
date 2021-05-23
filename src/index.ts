@@ -1,7 +1,8 @@
 import { Plan } from "./types/plan";
 import { IAPProps } from "./iap-type";
+import IapKitScreen from "./iap-kit.screen";
 import IapKit from "./iap-kit";
 
-export default IapKit;
+export default IapKitScreen;
 
-export { IAPProps, Plan };
+export { IapKit, IAPProps, Plan };

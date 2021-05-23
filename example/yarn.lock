@@ -2312,6 +2312,11 @@ domexception@^2.0.1:
   dependencies:
     webidl-conversions "^5.0.0"
 
+dooboolab-welcome@^1.3.0:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/dooboolab-welcome/-/dooboolab-welcome-1.3.1.tgz#37c4bbae0c84616c37ba9301dc87521ae2e9af86"
+  integrity sha512-KcTf3RVRGO3QADgsEJPFixFqj1c3oZPI3SnS6rVO7soaASi4+iHmVvBFFAf+l/sQsxCbPeV8sGhsdG6ZdSLqmQ==
+
 ecc-jsbn@~0.1.1:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/ecc-jsbn/-/ecc-jsbn-0.1.2.tgz#3a83a904e54353287874c564b7549386849a98c9"
@@ -5198,6 +5203,18 @@ react-native-codegen@^0.0.6:
     flow-parser "^0.121.0"
     jscodeshift "^0.11.0"
     nullthrows "^1.1.1"
+
+react-native-iap-kit@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/react-native-iap-kit/-/react-native-iap-kit-1.0.1.tgz#4e55b54ccaa97ddf90f9bdcea5f27865ce9f4527"
+  integrity sha512-sev2yp1hssxgrMvfnmvb4CLkP6XY+dyA4bDWb0XB+MO0aqLbMDH2zuqZ+xxkgnrxSeYU8x9KIrO3eeQXen3uBg==
+
+react-native-iap@^6.0.6:
+  version "6.0.6"
+  resolved "https://registry.yarnpkg.com/react-native-iap/-/react-native-iap-6.0.6.tgz#cb8690139b5036c043ca702cbe8ac4589be38ccc"
+  integrity sha512-UAwWx//SDTTmMTBj2hyhRs6FV0yjZqmnzSOWskFVx3yf8e6nyVeYdP59eJG7g42pGf116sX4ZYe75E8JooQRiQ==
+  dependencies:
+    dooboolab-welcome "^1.3.0"
 
 react-native@0.64.1:
   version "0.64.1"

@@ -10,7 +10,7 @@ import {
 } from 'react-native-iap';
 import { ReceiptValidationResponse } from 'react-native-iap/src/types/apple';
 
-class IapTemplate {
+class IapKit {
     canMakePayments = true;
 
     purchaseUpdateSubscription?: any;
@@ -154,4 +154,4 @@ class IapTemplate {
     }
 }
 
-export default new IapTemplate();
+export default new IapKit();

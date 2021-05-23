@@ -1,1 +1,2 @@
-TBD...
+- Setup thông tin purchase trên Google Play & AppStore
+- 

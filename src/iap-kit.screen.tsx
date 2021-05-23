@@ -5,7 +5,7 @@ import PremiumPopup from "./theme1/premium.popup";
 
 interface State {}
 
-export default class IapKit extends React.PureComponent<IAPProps, State> {
+export default class IapKitScreen extends React.PureComponent<IAPProps, State> {
   constructor(props: IAPProps) {
     super(props);
     this.state = {};
