@@ -5204,10 +5204,10 @@ react-native-codegen@^0.0.6:
     jscodeshift "^0.11.0"
     nullthrows "^1.1.1"
 
-react-native-iap-kit@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/react-native-iap-kit/-/react-native-iap-kit-1.0.1.tgz#4e55b54ccaa97ddf90f9bdcea5f27865ce9f4527"
-  integrity sha512-sev2yp1hssxgrMvfnmvb4CLkP6XY+dyA4bDWb0XB+MO0aqLbMDH2zuqZ+xxkgnrxSeYU8x9KIrO3eeQXen3uBg==
+react-native-iap-kit@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/react-native-iap-kit/-/react-native-iap-kit-1.0.2.tgz#2474aa56374e408f849451b75d48cb22affb12db"
+  integrity sha512-k87d//hDm7+QahjyiQQB10W1u0KdQzHDQC1Bq0RmskGpINiNumUuONE5m5gM9O05YfOYz2BL6AR+2sF+qQXnxw==
 
 react-native-iap@^6.0.6:
   version "6.0.6"
