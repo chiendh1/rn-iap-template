@@ -22,7 +22,7 @@ class IapKit {
   constructor() {}
 
   async init(
-    opts: { skus: string[] },
+    opts: { skus: { sku: string; type: "sub" | "product" }[] },
     onSuccess?: () => void,
     onFailed?: () => void
   ) {
@@ -71,7 +71,24 @@ class IapKit {
       console.warn(err.message);
     }
 
-    await RNIap.getProducts(opts.skus);
+    const subscriptionSkus = [];
+    const productSkus = [];
+
+    opts.skus.forEach((element) => {
+      if (element.type === "sub") {
+        subscriptionSkus.push(element.sku);
+      } else if (element.type === "product") {
+        productSkus.push(element.sku);
+      }
+    });
+
+    if (subscriptionSkus.length > 0) {
+      await RNIap.getSubscriptions(subscriptionSkus);
+    }
+
+    if (productSkus.length > 0) {
+      await RNIap.getProducts(productSkus);
+    }
   }
 
   destroy() {
@@ -105,7 +122,8 @@ class IapKit {
       );
 
       if (availablePurchases.length === 0) {
-        return false;
+        onFailed?.();
+        return;
       }
 
       const latestAvailableReceipt =
@@ -121,10 +139,14 @@ class IapKit {
           isTestEnvironment
         );
 
-      if (!decodedReceipt) return false;
+      if (!decodedReceipt) {
+        onFailed?.();
+        return;
+      }
 
       if (decodedReceipt.status) {
-        return false;
+        onFailed?.();
+        return;
       }
       const { latest_receipt_info: latestReceiptInfo }: any = decodedReceipt;
 
