@@ -1,157 +1,146 @@
-import { Platform } from 'react-native';
-import * as RNIap from 'react-native-iap';
+import { Platform } from "react-native";
+import * as RNIap from "react-native-iap";
 import {
-    InAppPurchase,
-    ProductPurchase,
-    PurchaseError,
-    purchaseErrorListener,
-    purchaseUpdatedListener,
-    SubscriptionPurchase
-} from 'react-native-iap';
-import { ReceiptValidationResponse } from 'react-native-iap/src/types/apple';
+  InAppPurchase,
+  ProductPurchase,
+  PurchaseError,
+  purchaseErrorListener,
+  purchaseUpdatedListener,
+  SubscriptionPurchase,
+} from "react-native-iap";
+import { ReceiptValidationResponse } from "react-native-iap/src/types/apple";
 
 class IapKit {
-    canMakePayments = true;
+  canMakePayments = true;
 
-    purchaseUpdateSubscription?: any;
+  purchaseUpdateSubscription?: any;
 
-    purchaseErrorSubscription?: any;
+  purchaseErrorSubscription?: any;
 
-    iOSSecretKey?: string;
+  iOSSecretKey?: string;
 
-    constructor() {}
+  constructor() {}
 
-    async init(
-        opts: { skus: string[] },
-        onSuccess?: () => {},
-        onFailed?: () => void
-    ) {
-        try {
-            const status = await RNIap.initConnection();
+  async init(
+    opts: { skus: string[] },
+    onSuccess?: () => void,
+    onFailed?: () => void
+  ) {
+    try {
+      const status = await RNIap.initConnection();
 
-            if (Platform.OS === 'android') {
-                await RNIap.flushFailedPurchasesCachedAsPendingAndroid();
+      if (Platform.OS === "android") {
+        await RNIap.flushFailedPurchasesCachedAsPendingAndroid();
+      }
+
+      // On ios initConnection will return the result of canMakePayments
+      if (Platform.OS === "ios" && !status) {
+        this.canMakePayments = false;
+      }
+
+      if (!this.canMakePayments) {
+        console.warn("cannot make payments");
+      }
+
+      this.purchaseUpdateSubscription = purchaseUpdatedListener(
+        async (
+          purchase: InAppPurchase | SubscriptionPurchase | ProductPurchase
+        ) => {
+          const receipt = purchase.transactionReceipt;
+          if (receipt) {
+            if (Platform.OS === "ios") {
+              await RNIap.finishTransactionIOS(purchase.transactionId!);
+            } else if (Platform.OS === "android") {
+              // If not consumable
+              await RNIap.acknowledgePurchaseAndroid(purchase.purchaseToken!);
             }
+            await RNIap.finishTransaction(purchase, false);
 
-            // On ios initConnection will return the result of canMakePayments
-            if (Platform.OS === 'ios' && !status) {
-                this.canMakePayments = false;
-            }
-
-            if (!this.canMakePayments) {
-                console.warn('cannot make payments');
-            }
-
-            this.purchaseUpdateSubscription = purchaseUpdatedListener(
-                async (
-                    purchase:
-                        | InAppPurchase
-                        | SubscriptionPurchase
-                        | ProductPurchase
-                ) => {
-                    console.log('purchaseUpdatedListener', purchase);
-                    const receipt = purchase.transactionReceipt;
-                    if (receipt) {
-                        if (Platform.OS === 'ios') {
-                            await RNIap.finishTransactionIOS(
-                                purchase.transactionId!
-                            );
-                        } else if (Platform.OS === 'android') {
-                            // If not consumable
-                            await RNIap.acknowledgePurchaseAndroid(
-                                purchase.purchaseToken!
-                            );
-                        }
-                        await RNIap.finishTransaction(purchase, false);
-
-                        onSuccess?.();
-                    }
-                }
-            );
-
-            this.purchaseErrorSubscription = purchaseErrorListener(
-                (error: PurchaseError) => {
-                    console.warn('purchaseErrorListener', error);
-                    onFailed?.();
-                }
-            );
-        } catch (err) {
-            console.warn(err.message);
+            onSuccess?.();
+          }
         }
+      );
 
-        await RNIap.getProducts(opts.skus);
+      this.purchaseErrorSubscription = purchaseErrorListener(
+        (error: PurchaseError) => {
+          console.warn("purchaseErrorListener", error);
+          onFailed?.();
+        }
+      );
+    } catch (err) {
+      console.warn(err.message);
     }
 
-    destroy() {
-        this.purchaseUpdateSubscription?.remove();
-        this.purchaseUpdateSubscription = null;
-        this.purchaseErrorSubscription?.remove();
-        this.purchaseErrorSubscription = null;
+    await RNIap.getProducts(opts.skus);
+  }
+
+  destroy() {
+    this.purchaseUpdateSubscription?.remove();
+    this.purchaseUpdateSubscription = null;
+    this.purchaseErrorSubscription?.remove();
+    this.purchaseErrorSubscription = null;
+  }
+
+  async restorePurchase(
+    iOSPassword?: string,
+    onSuccess?: () => void,
+    onFailed?: () => void
+  ) {
+    if (Platform.OS === "android") {
+      const purchases = await RNIap.getAvailablePurchases();
+
+      if (purchases.length > 0 && purchases[0].purchaseToken) {
+        onSuccess?.();
+      } else {
+        onFailed?.();
+      }
+      return;
     }
 
-    async restorePurchase(
-        iOSPassword?: string,
-        onSuccess?: () => void,
-        onFailed?: () => void
-    ) {
-        if (Platform.OS === 'android') {
-            const purchases = await RNIap.getAvailablePurchases();
+    if (Platform.OS === "ios") {
+      const availablePurchases = await RNIap.getAvailablePurchases();
 
-            if (purchases.length > 0 && purchases[0].purchaseToken) {
-                onSuccess?.();
-            } else {
-                onFailed?.();
-            }
-            return;
-        }
+      const sortedAvailablePurchases = availablePurchases.sort(
+        (a, b) => b.transactionDate - a.transactionDate
+      );
 
-        if (Platform.OS === 'ios') {
-            const availablePurchases = await RNIap.getAvailablePurchases();
+      if (availablePurchases.length === 0) {
+        return false;
+      }
 
-            const sortedAvailablePurchases = availablePurchases.sort(
-                (a, b) => b.transactionDate - a.transactionDate
-            );
+      const latestAvailableReceipt =
+        sortedAvailablePurchases[0].transactionReceipt;
 
-            if (availablePurchases.length === 0) {
-                return false;
-            }
+      const isTestEnvironment = __DEV__;
+      const decodedReceipt: ReceiptValidationResponse | false =
+        await RNIap.validateReceiptIos(
+          {
+            "receipt-data": latestAvailableReceipt,
+            password: iOSPassword,
+          },
+          isTestEnvironment
+        );
 
-            const latestAvailableReceipt =
-                sortedAvailablePurchases[0].transactionReceipt;
+      if (!decodedReceipt) return false;
 
-            const isTestEnvironment = __DEV__;
-            const decodedReceipt: ReceiptValidationResponse | false =
-                await RNIap.validateReceiptIos(
-                    {
-                        'receipt-data': latestAvailableReceipt,
-                        password: iOSPassword
-                    },
-                    isTestEnvironment
-                );
+      if (decodedReceipt.status) {
+        return false;
+      }
+      const { latest_receipt_info: latestReceiptInfo }: any = decodedReceipt;
 
-            if (!decodedReceipt) return false;
+      const isSubValid = !!latestReceiptInfo.find((receipt: any) => {
+        const expirationInMilliseconds = Number(receipt.expires_date_ms);
+        const nowInMilliseconds = Date.now();
+        return expirationInMilliseconds > nowInMilliseconds;
+      });
 
-            if (decodedReceipt.status) {
-                return false;
-            }
-            const { latest_receipt_info: latestReceiptInfo }: any =
-                decodedReceipt;
-
-            const isSubValid = !!latestReceiptInfo.find((receipt: any) => {
-                const expirationInMilliseconds = Number(
-                    receipt.expires_date_ms
-                );
-                const nowInMilliseconds = Date.now();
-                return expirationInMilliseconds > nowInMilliseconds;
-            });
-
-            if (isSubValid) {
-                onSuccess?.();
-            } else {
-                onFailed?.();
-            }
-        }
+      if (isSubValid) {
+        onSuccess?.();
+      } else {
+        onFailed?.();
+      }
     }
+  }
 }
 
 export default new IapKit();
