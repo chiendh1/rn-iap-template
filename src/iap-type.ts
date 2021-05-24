@@ -2,12 +2,15 @@ import { ModalProps, StyleProp, ViewStyle } from "react-native";
 import { Plan } from "./types/plan";
 
 export interface IAPProps {
-  style?: StyleProp<ViewStyle>;
+  visible: boolean;
   onRestorePressed?: () => void;
   benefits: string[];
   plans: Plan[];
-  visible?: boolean;
+  privacyUrl: string;
+  termsUrl: string;
+
+  theme?: "theme1";
+  style?: StyleProp<ViewStyle>;
   onBackPressed?: () => void;
   modalProps?: Partial<ModalProps>;
-  theme?: 'theme1'
 }

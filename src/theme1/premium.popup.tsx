@@ -1,15 +1,14 @@
 import * as React from "react";
 import {
-  StyleProp,
+  Image,
+  Linking, 
+  Modal,
+  Platform, 
+  ScrollView, 
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
-  ViewStyle,
-  Modal,
-  ModalProps,
-  Image,
-  ScrollView,
+  View
 } from "react-native";
 import * as RNIap from "react-native-iap";
 import { IAPProps } from "../iap-type";
@@ -17,42 +16,17 @@ import { Plan } from "../types/plan";
 import { DimensionUtils } from "../utils/DimensionUtils";
 import InformationComponent from "./components/information.component";
 import PlanComponent from "./components/plan.component";
-
 import images from "./res/images";
+
 
 interface State {
   skuSelected?: string;
 }
 
 export default class PremiumPopup extends React.PureComponent<IAPProps, State> {
-  static defaultProps: IAPProps = {
-    benefits: ["Remove all ads", "Daily new content", "Other cool features"],
-    plans: [
-      {
-        duration: "1",
-        unit: "week",
-        isRecommend: false,
-        price: "$3.49",
-        sku: "123",
-        type: "subs",
-      },
-      {
-        duration: "3",
-        unit: "week",
-        isRecommend: true,
-        price: "$3.49",
-        sku: "1233",
-        type: "subs",
-      },
-      {
-        duration: "1",
-        unit: "week",
-        isRecommend: false,
-        price: "$3.49",
-        sku: "12344",
-        type: "subs",
-      },
-    ],
+  static defaultProps: any = {
+    benefits: [],
+    plans: [],
   };
 
   constructor(props: IAPProps) {
@@ -90,7 +64,24 @@ export default class PremiumPopup extends React.PureComponent<IAPProps, State> {
     }
   };
 
+  private onTermsPressed = async () => {
+    const supported = await Linking.canOpenURL(this.props.termsUrl);
+    if (supported) {
+      await Linking.openURL(this.props.termsUrl);
+    } 
+  }
+
+  private onPrivacyPressed = async () => {
+    const supported = await Linking.canOpenURL(this.props.privacyUrl);
+    if (supported) {
+      await Linking.openURL(this.props.privacyUrl);
+    }
+  }
+
   private renderView() {
+
+    const note = `Payment will be charged to your ${Platform.OS === 'android' ? 'Google Play': 'iTunes'} account at the end of your free trial or confirmation of purchase if you are not starting a trial. Subscription will automatically renew unless it is cancelled at least 24 hours before the end of your trial or current period. Your account will be charged for renewal within 24 hours prior to the end of the current period. You can manage or cancel the subscriptions at any time in ${Platform.OS === 'android' ? 'Google Play': 'iTunes'} settings on your device. By tapping "Continue" you confirm that you have read the Terms of Use and Privacy Policy and agree to be bound by their terms.`
+
     return (
       <View style={[styles.container, this.props.style]}>
         <View
@@ -142,14 +133,23 @@ export default class PremiumPopup extends React.PureComponent<IAPProps, State> {
               fontSize: 10,
             }}
           >
-            Payment will be charged to your Google Play account at the end of
-            your free trial or confirmation of purchase if you are not starting
-            a trial. Subscription will automatically renew unless it is
-            cancelled at least 24 hours before the end of your trial or current
-            period. Your account will be charged for renewal within 24 hours
-            prior to the end of the current period. You can manage or cancel the
-            subscriptions at any time in Google Play settings.
+            {note}
           </Text>
+
+
+          <View style={{flexDirection:'row', justifyContent:'space-between', marginTop: 10,  paddingHorizontal: 15, marginBottom: DimensionUtils.getBottomSpace() + 10}}>
+            <TouchableOpacity
+              onPress={this.onTermsPressed}
+            >
+              <Text style={{textDecorationLine:'underline', fontSize: 10}}>Terms of use</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+             onPress={this.onPrivacyPressed}
+            >
+              <Text style={{textDecorationLine:'underline', fontSize: 10}}>Privacy Policy</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </View>
     );
